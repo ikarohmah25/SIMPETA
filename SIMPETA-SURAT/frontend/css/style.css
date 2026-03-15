@@ -1,0 +1,57 @@
+/* style.css - Login */
+:root {
+    --primary: #2c3e50;
+    --secondary: #3498db;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --dark: #1a2634;
+    --light: #ecf0f1;
+    --gray: #95a5a6;
+    --staff-color: #3498db;
+    --supervisor-color: #f39c12;
+    --manager-color: #e74c3c;
+    --border-radius: 12px;
+    --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.login-container { width:100%; max-width:500px; }
+.login-card { background:white; border-radius:20px; box-shadow:var(--box-shadow); padding:40px; animation:slideUp .5s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+.login-header { text-align:center; margin-bottom:30px; }
+.logo-wrapper { width:80px; height:80px; background:linear-gradient(135deg,var(--primary),var(--secondary)); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+.logo-wrapper i { font-size:40px; color:white; }
+.login-header h1 { font-size:32px; font-weight:700; color:var(--dark); margin-bottom:5px; }
+.subtitle { color:var(--gray); font-size:14px; margin-bottom:5px; }
+.version { color:var(--secondary); font-size:12px; font-weight:600; }
+.role-selector { margin-bottom:25px; }
+.role-selector label { display:block; margin-bottom:8px; font-weight:600; color:var(--dark); }
+.role-selector label i { color:var(--secondary); margin-right:5px; }
+.role-dropdown { width:100%; padding:12px 15px; border:2px solid #e0e0e0; border-radius:var(--border-radius); font-size:16px; outline:none; transition:.3s; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 15px center; }
+.role-dropdown:focus { border-color:var(--secondary); box-shadow:0 0 0 3px rgba(52,152,219,0.1); }
+.input-group { margin-bottom:20px; }
+.input-group label { display:block; margin-bottom:8px; font-weight:500; color:var(--dark); }
+.input-group label i { color:var(--secondary); margin-right:5px; }
+.input-field { width:100%; padding:12px 15px; border:2px solid #e0e0e0; border-radius:var(--border-radius); font-size:15px; outline:none; transition:.3s; }
+.input-field:focus { border-color:var(--secondary); box-shadow:0 0 0 3px rgba(52,152,219,0.1); }
+.login-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; border:none; border-radius:var(--border-radius); font-size:16px; font-weight:600; cursor:pointer; transition:.3s; margin:10px 0 20px; }
+.login-btn:hover { transform:translateY(-2px); box-shadow:0 5px 20px rgba(52,152,219,0.4); }
+.login-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+.status-message { padding:12px; border-radius:var(--border-radius); margin-bottom:20px; font-size:14px; text-align:center; display:none; }
+.status-message.show { display:block; }
+.status-message.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+.status-message.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+.status-message.info { background:#d1ecf1; color:#0c5460; border:1px solid #bee5eb; }
+.credential-info { background:#f8f9fa; border-radius:var(--border-radius); padding:15px; margin-bottom:20px; }
+.credential-info p { font-size:13px; font-weight:600; color:var(--dark); margin-bottom:10px; }
+.credential-info p i { color:var(--secondary); margin-right:5px; }
+.credential-grid { display:grid; gap:8px; margin-bottom:10px; }
+.cred-item { display:flex; align-items:center; gap:10px; background:white; padding:8px 12px; border-radius:8px; font-size:13px; }
+.role-badge { padding:4px 8px; border-radius:4px; font-weight:600; font-size:11px; color:white; }
+.role-badge.staff { background:var(--staff-color); }
+.role-badge.supervisor { background:var(--supervisor-color); }
+.role-badge.manager { background:var(--manager-color); }
+.cred-item code { background:#f0f0f0; padding:2px 6px; border-radius:4px; font-size:12px; }
+.hint { font-size:12px; color:var(--gray); font-style:italic; margin-top:5px; }
+.login-footer { text-align:center; font-size:12px; color:var(--gray); border-top:1px solid #e0e0e0; padding-top:20px; }

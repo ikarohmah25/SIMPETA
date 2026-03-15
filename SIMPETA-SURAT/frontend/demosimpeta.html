@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPETA Progress Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .demo-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .role-selector {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            color: #333;
+            font-weight: 500;
+        }
+        .role-selector select {
+            margin-left: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        .progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .progress-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border-left: 4px solid #3498db;
+        }
+        .progress-card.rejected {
+            border-left-color: #e74c3c;
+            opacity: 0.8;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .surat-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .surat-info p {
+            font-size: 13px;
+            color: #666;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-requested { background: #fff3cd; color: #856404; }
+        .status-scanned { background: #cce5ff; color: #004085; }
+        .status-interview { background: #d1ecf1; color: #0c5460; }
+        .status-offer { background: #d4edda; color: #155724; }
+        .status-boarding { background: #d6d8d9; color: #1e1e2f; }
+        .status-storage { background: #e2d5f1; color: #563d7c; }
+        .status-result { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+
+        .progress-bar-container {
+            margin: 15px 0;
+        }
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-stages {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+        .stage-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            font-size: 11px;
+            color: #999;
+        }
+        .stage-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            margin-bottom: 4px;
+            transition: 0.2s;
+        }
+        .stage-marker.completed .stage-dot {
+            background: #3498db;
+        }
+        .stage-marker.current .stage-dot {
+            background: #2ecc71;
+            box-shadow: 0 0 0 3px rgba(46,204,113,0.3);
+        }
+        .rejection-reason {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+        .btn-view { background: #3498db; color: white; }
+        .btn-approve { background: #2ecc71; color: white; }
+        .btn-reject { background: #e74c3c; color: white; }
+        .btn-next { background: #f39c12; color: white; }
+        .btn-edit { background: #f1c40f; color: black; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-print { background: #9b59b6; color: white; }
+        .btn-action:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .add-form {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .form-row input, .form-row select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            flex: 1 1 200px;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>📄 SIMPETA Progress Demo</h1>
+        <div class="role-selector">
+            <span>Login sebagai:</span>
+            <select id="roleSelect">
+                <option value="staff">Staff</option>
+                <option value="supervisor" selected>Supervisor</option>
+                <option value="manager">Manager</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">Semua</button>
+        <button class="filter-btn" data-filter="requested">Requested</button>
+        <button class="filter-btn" data-filter="approved">Approved</button>
+        <button class="filter-btn" data-filter="rejected">Rejected</button>
+    </div>
+
+    <div id="progressContainer" class="progress-container">
+        <!-- Cards will be inserted here -->
+    </div>
+
+    <div class="add-form">
+        <h3>➕ Request Surat Baru (Staff)</h3>
+        <div class="form-row">
+            <input type="text" id="newDari" placeholder="Dari" value="PT Contoh">
+            <input type="text" id="newPerihal" placeholder="Perihal" value="Permintaan Data">
+            <select id="newExtInt">
+                <option value="INTERNAL">INTERNAL</option>
+                <option value="EXTERNAL">EXTERNAL</option>
+            </select>
+            <button class="btn-primary" id="btnAddRequest">Ajukan</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- Data & Helpers -----
+            const STAGES = ["Requested", "Scanned", "Interview", "Offer", "Boarding", "Storage", "Result"];
+            const STAGE_LABELS = {
+                "Requested": "Permintaan Diajukan",
+                "Scanned": "Dipindai",
+                "Interview": "Wawancara",
+                "Offer": "Penawaran",
+                "Boarding": "Boarding",
+                "Storage": "Penyimpanan",
+                "Result": "Hasil",
+                "Rejected": "Ditolak"
+            };
+
+            // Get current role from dropdown
+            function getRole() {
+                return document.getElementById('roleSelect').value;
+            }
+
+            // For demo, we hardcode a staff username
+            const currentUsername = 'staff';
+
+            // Load data from localStorage or initialize with dummy
+            function loadData() {
+                let data = localStorage.getItem('simpeta_surat_demo');
+                if (!data) {
+                    // Create 10 dummy items
+                    const dummy = [];
+                    for (let i = 1; i <= 10; i++) {
+                        const statusIdx = Math.floor(Math.random() * (STAGES.length + 1));
+                        const status = statusIdx < STAGES.length ? STAGES[statusIdx] : 'Rejected';
+                        const requestedBy = Math.random() > 0.5 ? 'staff' : 'supervisor';
+                        dummy.push({
+                            NO: i,
+                            'EXT/INT': i % 2 ? 'INTERNAL' : 'EXTERNAL',
+                            DARI: ['Kementerian', 'Dinas', 'Perusahaan', 'Universitas'][i % 4],
+                            'NOMOR SURAT': `00${i}/ABC/2025`,
+                            'TANGGAL SURAT': '2025-03-01',
+                            'TANGGAL TERIMA': '2025-03-02',
+                            PERIHAL: ['Permintaan Data', 'Kerjasama', 'Undangan', 'Pemberitahuan'][i % 4],
+                            KETERANGAN: 'Lorem ipsum',
+                            'TANGGAL SELESAI': '',
+                            status: status,
+                            requestedBy: requestedBy,
+                            requestedDate: new Date().toISOString(),
+                            approvedBy: status !== 'Requested' ? 'supervisor' : '',
+                            approvedDate: status !== 'Requested' ? new Date().toISOString() : '',
+                            rejectionReason: status === 'Rejected' ? 'Data tidak lengkap' : ''
+                        });
+                    }
+                    localStorage.setItem('simpeta_surat_demo', JSON.stringify(dummy));
+                    return dummy;
+                }
+                return JSON.parse(data);
+            }
+
+            function saveData(data) {
+                localStorage.setItem('simpeta_surat_demo', JSON.stringify(data));
+            }
+
+            // Render cards based on filter
+            function renderCards(filter = 'all') {
+                const container = document.getElementById('progressContainer');
+                const role = getRole();
+                let data = loadData();
+
+                // Staff only sees their own
+                if (role === 'staff') {
+                    data = data.filter(s => s.requestedBy === 'staff');
+                }
+
+                // Apply filter
+                if (filter !== 'all') {
+                    if (filter === 'approved') {
+                        data = data.filter(s => s.status !== 'Requested' && s.status !== 'Rejected');
+                    } else {
+                        data = data.filter(s => s.status.toLowerCase() === filter);
+                    }
+                }
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="no-data">Tidak ada surat.</p>';
+                    return;
+                }
+
+                // Sort by NO descending
+                data.sort((a,b) => b.NO - a.NO);
+
+                let html = '';
+                data.forEach(s => {
+                    html += generateCard(s, role);
+                });
+                container.innerHTML = html;
+            }
+
+            function generateCard(s, role) {
+                const currentIdx = STAGES.indexOf(s.status);
+                const isRejected = s.status === 'Rejected';
+                const progressPercent = isRejected ? 0 : ((currentIdx + 1) / STAGES.length) * 100;
+
+                // Build action buttons
+                let actions = '';
+
+                // View always
+                actions += `<button class="btn-action btn-view" onclick="viewSurat(${s.NO})">👁️ Lihat</button>`;
+
+                // If staff and Result -> print
+                if (role === 'staff' && s.status === 'Result') {
+                    actions += `<button class="btn-action btn-print" onclick="printSurat(${s.NO})">🖨️ Cetak</button>`;
+                }
+
+                // If supervisor/manager and status Requested -> approve/reject
+                if ((role === 'supervisor' || role === 'manager') && s.status === 'Requested') {
+                    actions += `<button class="btn-action btn-approve" onclick="approveSurat(${s.NO})">✓ Setujui</button>`;
+                    actions += `<button class="btn-action btn-reject" onclick="rejectSurat(${s.NO})">✗ Tolak</button>`;
+                }
+
+                // If supervisor/manager and not final, allow next stage (except Requested)
+                if ((role === 'supervisor' || role === 'manager') && !isRejected && currentIdx >= 0 && currentIdx < STAGES.length - 1 && s.status !== 'Requested') {
+                    actions += `<button class="btn-action btn-next" onclick="nextStage(${s.NO})">➡️ Lanjut</button>`;
+                }
+
+                // Edit for supervisor/manager
+                if (role === 'supervisor' || role === 'manager') {
+                    actions += `<button class="btn-action btn-edit" onclick="editSurat(${s.NO})">✏️ Edit</button>`;
+                }
+
+                // Delete for manager
+                if (role === 'manager') {
+                    actions += `<button class="btn-action btn-delete" onclick="deleteSurat(${s.NO})">🗑️ Hapus</button>`;
+                }
+
+                // Build stage markers
+                let stagesHtml = '';
+                STAGES.forEach((stage, idx) => {
+                    let cls = '';
+                    if (idx < currentIdx) cls = 'completed';
+                    else if (idx === currentIdx && s.status === stage) cls = 'completed current';
+                    else if (idx === currentIdx) cls = 'current';
+                    stagesHtml += `
+                        <div class="stage-marker ${cls}">
+                            <span class="stage-dot"></span>
+                            <span class="stage-label">${STAGE_LABELS[stage]}</span>
+                        </div>
+                    `;
+                });
+
+                const statusClass = s.status ? s.status.toLowerCase() : 'requested';
+                return `
+                    <div class="progress-card ${isRejected ? 'rejected' : ''}">
+                        <div class="card-header">
+                            <div class="surat-info">
+                                <h3>${s['NOMOR SURAT']} - ${s.PERIHAL}</h3>
+                                <p>Dari: ${s.DARI} | Pengaju: ${s.requestedBy} | Tgl: ${new Date(s.requestedDate).toLocaleDateString('id-ID')}</p>
+                            </div>
+                            <div class="surat-status">
+                                <span class="status-badge status-${statusClass}">${STAGE_LABELS[s.status] || s.status}</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${progressPercent}%;"></div>
+                            <div class="progress-stages">
+                                ${stagesHtml}
+                            </div>
+                        </div>
+                        ${s.rejectionReason ? `<div class="rejection-reason">Alasan: ${s.rejectionReason}</div>` : ''}
+                        <div class="card-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Action functions (to be exposed globally)
+            window.viewSurat = function(no) {
+                alert('Lihat detail surat #' + no + ' (fungsi detail akan diarahkan ke halaman terpisah)');
+            };
+            window.printSurat = function(no) {
+                alert('Mencetak surat #' + no);
+            };
+            window.approveSurat = function(no) {
+                let data = loadData();
+                const idx = data.findIndex(s => s.NO == no);
+                if (idx !== -1) {
+                    data[idx].status = 'Scanned';
+                    data[idx].approvedBy = getRole();
+                    data[idx].approvedDate = new Date().toISOString();
+                    saveData(data);
+                    renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+                }
+            };
+            window.rejectSurat = function(no) {
+                const reason = prompt('Alasan penolakan:');
+                if (reason) {
+                    let data = loadData();
+                    const idx = data.findIndex(s => s.NO == no);
+                    if (idx !== -1) {
+                        data[idx].status = 'Rejected';
+                        data[idx].approvedBy = getRole();
+                        data[idx].approvedDate = new Date().toISOString();
+                        data[idx].rejectionReason = reason;
+                        saveData(data);
+                        renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+                    }
+                }
+            };
+            window.nextStage = function(no) {
+                let data = loadData();
+                const idx = data.findIndex(s => s.NO == no);
+                if (idx !== -1) {
+                    const current = data[idx].status;
+                    const currentIdx = STAGES.indexOf(current);
+                    if (currentIdx >= 0 && currentIdx < STAGES.length - 1) {
+                        data[idx].status = STAGES[currentIdx + 1];
+                        if (data[idx].status === 'Result') {
+                            data[idx]['TANGGAL SELESAI'] = new Date().toISOString().split('T')[0];
+                        }
+                        saveData(data);
+                        renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+                    }
+                }
+            };
+            window.editSurat = function(no) {
+                alert('Edit surat #' + no + ' (buka form edit)');
+            };
+            window.deleteSurat = function(no) {
+                if (confirm('Hapus surat ini?')) {
+                    let data = loadData();
+                    data = data.filter(s => s.NO != no);
+                    saveData(data);
+                    renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+                }
+            };
+
+            // Add new request (simulate staff)
+            document.getElementById('btnAddRequest').addEventListener('click', function() {
+                const dari = document.getElementById('newDari').value;
+                const perihal = document.getElementById('newPerihal').value;
+                const extInt = document.getElementById('newExtInt').value;
+                if (!dari || !perihal) return alert('Isi semua field');
+
+                let data = loadData();
+                const newNo = data.length > 0 ? Math.max(...data.map(s => s.NO)) + 1 : 1;
+                const newSurat = {
+                    NO: newNo,
+                    'EXT/INT': extInt,
+                    DARI: dari,
+                    'NOMOR SURAT': `REQ${newNo}/2025`,
+                    'TANGGAL SURAT': new Date().toISOString().split('T')[0],
+                    'TANGGAL TERIMA': new Date().toISOString().split('T')[0],
+                    PERIHAL: perihal,
+                    KETERANGAN: '',
+                    'TANGGAL SELESAI': '',
+                    status: 'Requested',
+                    requestedBy: 'staff',
+                    requestedDate: new Date().toISOString(),
+                    approvedBy: '',
+                    approvedDate: '',
+                    rejectionReason: ''
+                };
+                data.push(newSurat);
+                saveData(data);
+                renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+                document.getElementById('newDari').value = '';
+                document.getElementById('newPerihal').value = '';
+            });
+
+            // Filter tabs
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    renderCards(this.dataset.filter);
+                });
+            });
+
+            // Role change refreshes cards
+            document.getElementById('roleSelect').addEventListener('change', function() {
+                renderCards(document.querySelector('.filter-btn.active').dataset.filter);
+            });
+
+            // Initial render
+            renderCards('all');
+        })();
+    </script>
+</body>
+</html>

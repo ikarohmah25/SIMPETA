@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPETA · Form Surat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/surat-style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar" id="sidebar">
+            <!-- ... sidebar sama ... -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="page-title">
+                    <h1 id="formTitle">Request Surat</h1>
+                    <p id="formSubtitle">Isi formulir untuk mengajukan permintaan surat</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn-back" onclick="history.back()"><i class="fas fa-arrow-left"></i> Kembali</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="form-container">
+                    <form id="suratForm">
+                        <input type="hidden" id="mode" name="mode" value="request">
+                        <input type="hidden" id="suratId" name="suratId">
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label>EXT/INT <span class="required">*</span></label>
+                                <select id="extInt" class="form-control" required>
+                                    <option value="">Pilih</option>
+                                    <option value="EXTERNAL">EXTERNAL</option>
+                                    <option value="INTERNAL">INTERNAL</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>DARI <span class="required">*</span></label>
+                                <input type="text" id="dari" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor Surat <span class="required">*</span></label>
+                                <input type="text" id="nomorSurat" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Surat <span class="required">*</span></label>
+                                <input type="date" id="tglSurat" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Terima</label>
+                                <input type="date" id="tglTerima" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Perihal <span class="required">*</span></label>
+                                <input type="text" id="perihal" class="form-control" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Keterangan</label>
+                                <textarea id="keterangan" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="form-group full-width">
+    <label><i class="fab fa-whatsapp"></i> Nomor WhatsApp <span class="required">*</span></label>
+    <input type="tel" id="whatsapp" class="form-control" placeholder="Contoh: 81234567890" required>
+    <small class="form-hint">Masukkan nomor aktif (tanpa 0 di depan, tanpa +62)</small>
+                        </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="history.back()">Batal</button>
+                            <button type="submit" class="btn-submit">Kirim</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/surat-progress.js"></script>
+</body>
+</html>

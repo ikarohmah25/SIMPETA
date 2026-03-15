@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPETA · Data Surat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/surat-style.css">
+    <!-- Papa Parse untuk CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="asset/logoheader.png" alt="SIMPETA Logo" class="logo-image">
+                    <div class="logo-text">
+                        
+                    </div>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h4 id="displayName"></h4>
+                    <p id="displayRole"></p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
+                    <li class="active"><a href="surat-list.html"><i class="fas fa-table"></i><span>Data Surat</span></a></li>
+                    <li><a href="surat-form.html?mode=request"><i class="fas fa-plus-circle"></i><span>Request Surat</span></a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i><span>Keluar</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1>Data Surat</h1>
+                    <p>Daftar semua surat dan statusnya</p>
+                </div>
+                <div class="top-actions">
+                    <div class="date-display" id="currentDate"></div>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Action Bar -->
+                <div class="action-bar">
+                    <a href="surat-form.html?mode=request" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Request Surat
+                    </a>
+                    <select id="filterExtInt" class="filter-select">
+                        <option value="">Semua (EXT/INT)</option>
+                        <option value="EXTERNAL">EXTERNAL</option>
+                        <option value="INTERNAL">INTERNAL</option>
+                    </select>
+                    <input type="text" id="searchBox" class="filter-input" placeholder="Cari...">
+                </div>
+
+                <!-- Tabel Data Surat -->
+                <div class="table-container">
+                    <table id="suratTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>EXT/INT</th>
+                                <th>Dari</th>
+                                <th>Nomor Surat</th>
+                                <th>Tgl Surat</th>
+                                <th>Tgl Terima</th>
+                                <th>Perihal</th>
+                                <th>Keterangan</th>
+                                <th>Tgl Selesai</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/surat-progress.js"></script>
+    <script>
+        $(document).ready(function() {
+            const role = sessionStorage.getItem('simpeta_role');
+            const fullName = sessionStorage.getItem('simpeta_fullName');
+            const username = sessionStorage.getItem('simpeta_username') || 'staff';
+            if (!role) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            $('#displayName').text(fullName || 'User');
+            $('#displayRole').text(role);
+
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            // Fungsi untuk menginisialisasi DataTable
+            function initTable(suratData) {
+                // Filter staff
+                let dataForTable = suratData;
+                if (role === 'staff') {
+                    dataForTable = suratData.filter(s => s.requestedBy === username);
+                }
+
+                let table = $('#suratTable').DataTable({
+                    data: dataForTable,
+                    columns: [
+                        { data: 'NO' },
+                        { data: 'EXT/INT' },
+                        { data: 'DARI' },
+                        { data: 'NOMOR SURAT' },
+                        { 
+                            data: 'TANGGAL SURAT',
+                            render: data => data || '-'
+                        },
+                        { 
+                            data: 'TANGGAL TERIMA',
+                            render: data => data || '-'
+                        },
+                        { data: 'PERIHAL' },
+                        { 
+                            data: 'KETERANGAN',
+                            render: data => data ? data.substring(0, 30) + '...' : '-'
+                        },
+                        { 
+                            data: 'TANGGAL SELESAI',
+                            render: data => data || '-'
+                        },
+                        { 
+                            data: null,
+                            render: function(row) {
+                                const stageLabels = {
+                                    "Requested": "Permintaan Diajukan",
+                                    "Scanned": "Dipindai",
+                                    "Interview": "Wawancara",
+                                    "Offer": "Penawaran",
+                                    "Boarding": "Boarding",
+                                    "Storage": "Penyimpanan",
+                                    "Result": "Hasil",
+                                    "Rejected": "Ditolak"
+                                };
+                                const status = row.status || 'Requested';
+                                const label = stageLabels[status] || status;
+                                return `<span class="status-badge status-${status.toLowerCase()}">${label}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function(row) {
+                                let btns = '';
+
+                                // View selalu ada
+                                btns += `<button class="btn-action btn-view" onclick="viewSurat('${row.NO}')" title="Lihat"><i class="fas fa-eye"></i></button>`;
+
+                                // Staff: cetak jika status Result
+                                if (role === 'staff' && row.status === 'Result') {
+                                    btns += `<button class="btn-action btn-print" onclick="printSurat('${row.NO}')" title="Cetak"><i class="fas fa-print"></i></button>`;
+                                }
+
+                                // Supervisor/Manager: approve/reject jika Requested
+                                if ((role === 'supervisor' || role === 'manager') && row.status === 'Requested') {
+                                    btns += `<button class="btn-action btn-approve" onclick="approveSurat('${row.NO}')" title="Setujui"><i class="fas fa-check"></i></button>`;
+                                    btns += `<button class="btn-action btn-reject" onclick="rejectSurat('${row.NO}')" title="Tolak"><i class="fas fa-times"></i></button>`;
+                                }
+
+                                // Supervisor/Manager: next stage jika bukan final
+                                const finalStages = ['Result', 'Rejected'];
+                                if ((role === 'supervisor' || role === 'manager') && !finalStages.includes(row.status) && row.status !== 'Requested') {
+                                    btns += `<button class="btn-action btn-next" onclick="nextStage('${row.NO}')" title="Lanjut"><i class="fas fa-arrow-right"></i></button>`;
+                                }
+
+                                // Edit untuk supervisor/manager
+                                if (role === 'supervisor' || role === 'manager') {
+                                    btns += `<button class="btn-action btn-edit" onclick="editSurat('${row.NO}')" title="Edit"><i class="fas fa-edit"></i></button>`;
+                                }
+
+                                // Hapus untuk manager
+                                if (role === 'manager') {
+                                    btns += `<button class="btn-action btn-delete" onclick="deleteSurat('${row.NO}')" title="Hapus"><i class="fas fa-trash"></i></button>`;
+                                }
+
+                                return btns;
+                            }
+                        }
+                    ],
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                    },
+                    order: [[0, 'desc']],
+                    pageLength: 25,
+                    responsive: true
+                });
+
+                // Filter EXT/INT
+                $('#filterExtInt').on('change', function() {
+                    table.column(1).search(this.value).draw();
+                });
+
+                // Pencarian global
+                $('#searchBox').on('keyup', function() {
+                    table.search(this.value).draw();
+                });
+            }
+
+            // Coba ambil data dari localStorage terlebih dahulu
+            let stored = localStorage.getItem('simpeta_surat');
+            if (stored) {
+                try {
+                    let data = JSON.parse(stored);
+                    if (Array.isArray(data) && data.length > 0 && data[0].hasOwnProperty('NO')) {
+                        initTable(data);
+                    } else {
+                        // Data tidak valid, hapus dan reload CSV
+                        localStorage.removeItem('simpeta_surat');
+                        loadFromCSV();
+                    }
+                } catch (e) {
+                    localStorage.removeItem('simpeta_surat');
+                    loadFromCSV();
+                }
+            } else {
+                loadFromCSV();
+            }
+
+            function loadFromCSV() {
+                fetch('data/DataSurat.csv')
+                    .then(response => {
+                        if (!response.ok) throw new Error('CSV tidak ditemukan');
+                        return response.text();
+                    })
+                    .then(csvText => {
+                        const result = Papa.parse(csvText, {
+                            header: true,
+                            skipEmptyLines: true,
+                            transformHeader: h => h.trim()
+                        });
+                        if (result.errors.length) console.warn('Error parsing CSV:', result.errors);
+
+                        // Transformasi data CSV ke format yang diharapkan (dengan field progres)
+                        const nowISO = new Date().toISOString();
+                        const newData = result.data.map((row, idx) => {
+                            // Pastikan NO adalah integer
+                            let no = parseInt(row.NO);
+                            if (isNaN(no)) no = idx + 1;
+
+                            // Tentukan status default: jika TANGGAL SELESAI terisi, anggap selesai, else 'Approved' (sudah disetujui)
+                            let status = row['TANGGAL SELESAI'] ? 'Result' : 'Approved';
+                            // Jika ingin data lama bisa diproses lebih lanjut, bisa gunakan 'Scanned' atau 'Approved'
+
+                            return {
+                                NO: no,
+                                'EXT/INT': row['EXT/INT'] || '',
+                                DARI: row.DARI || '',
+                                'NOMOR SURAT': row['NOMOR SURAT'] || '',
+                                'TANGGAL SURAT': row['TANGGAL SURAT'] || '',
+                                'TANGGAL TERIMA': row['TANGGAL TERIMA'] || '',
+                                PERIHAL: row.PERIHAL || '',
+                                KETERANGAN: row.KETERANGAN || '',
+                                'TANGGAL SELESAI': row['TANGGAL SELESAI'] || '',
+                                // Field tambahan untuk progres
+                                status: status,
+                                requestedBy: 'system', // atau username? set system
+                                requestedDate: nowISO,
+                                approvedBy: row['TANGGAL SELESAI'] ? 'system' : '',
+                                approvedDate: row['TANGGAL SELESAI'] ? nowISO : '',
+                                rejectionReason: ''
+                            };
+                        });
+
+                        localStorage.setItem('simpeta_surat', JSON.stringify(newData));
+                        initTable(newData);
+                    })
+                    .catch(error => {
+                        console.error('Gagal load CSV, gunakan data dummy:', error);
+                        // Gunakan fungsi generateDummyData jika tersedia (dari surat-progress.js)
+                        if (typeof generateDummyData === 'function') {
+                            const dummy = generateDummyData(20);
+                            localStorage.setItem('simpeta_surat', JSON.stringify(dummy));
+                            initTable(dummy);
+                        } else {
+                            alert('Tidak dapat memuat data. Pastikan file data/DataSurat.csv tersedia.');
+                        }
+                    });
+            }
+
+            // Logout dan toggle sidebar
+            $('#logoutBtn').on('click', function() {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+
+            $('#sidebarToggle').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+            });
+
+            $('#menuToggle').on('click', function() {
+                $('#sidebar').toggleClass('mobile-open');
+            });
+        });
+
+        // Fungsi aksi (dipanggil dari tombol)
+        function viewSurat(no) { window.location.href = `surat-detail.html?id=${no}`; }
+        function printSurat(no) { alert('Fungsi cetak akan segera tersedia.'); }
+        function approveSurat(no) {
+            if (typeof window.approveSurat === 'function') window.approveSurat(no);
+            else location.reload();
+        }
+        function rejectSurat(no) {
+            if (typeof window.rejectSurat === 'function') window.rejectSurat(no);
+            else location.reload();
+        }
+        function nextStage(no) {
+            if (typeof window.nextStage === 'function') window.nextStage(no);
+            else location.reload();
+        }
+        function editSurat(no) { window.location.href = `surat-form.html?mode=edit&id=${no}`; }
+        function deleteSurat(no) {
+            if (typeof window.deleteSurat === 'function') window.deleteSurat(no);
+            else if (confirm('Hapus surat ini?')) {
+                let data = JSON.parse(localStorage.getItem('simpeta_surat') || '[]');
+                data = data.filter(s => s.NO != no);
+                localStorage.setItem('simpeta_surat', JSON.stringify(data));
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

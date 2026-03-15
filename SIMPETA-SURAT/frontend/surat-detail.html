@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMPETA · Detail Surat</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/surat-style.css">
+</head>
+<body>
+    <div class="dashboard">
+         <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fas fa-envelope-open-text"></i><div class="logo-text"><h2>SIMPETA</h2><small>Surat</small></div></div>
+                <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-chevron-left"></i></button>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+                <div class="user-info"><h4 id="displayName"></h4><p id="displayRole"></p></div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="dashboard.html"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
+                    <li><a href="surat-list.html"><i class="fas fa-table"></i><span>Data Surat</span></a></li>
+                    <li><a href="surat-form.html"><i class="fas fa-plus-circle"></i><span>Tambah Surat</span></a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Keluar</span></button></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-bar">...</header>
+            <div class="content">
+                <div class="detail-container" id="detailContainer"></div>
+                <div class="form-actions">
+                    <button class="btn-cancel" onclick="history.back()">Kembali</button>
+                    <button class="btn-edit" id="btnEdit">Edit</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/surat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const data = JSON.parse(localStorage.getItem('simpeta_surat')).find(d => d.NO == id);
+            const container = document.getElementById('detailContainer');
+            if (data) {
+                container.innerHTML = `
+                    <h2>Detail Surat #${data['NOMOR SURAT']}</h2>
+                    <table class="detail-table">
+                        <tr><th>EXT/INT</th><td>${data['EXT/INT']}</td></tr>
+                        <tr><th>DARI</th><td>${data['DARI']}</td></tr>
+                        <tr><th>Nomor Surat</th><td>${data['NOMOR SURAT']}</td></tr>
+                        <tr><th>Tanggal Surat</th><td>${data['TANGGAL SURAT']}</td></tr>
+                        <tr><th>Tanggal Terima</th><td>${data['TANGGAL TERIMA']}</td></tr>
+                        <tr><th>Perihal</th><td>${data['PERIHAL']}</td></tr>
+                        <tr><th>Keterangan</th><td>${data['KETERANGAN']}</td></tr>
+                        <tr><th>Status</th><td><span class="status-badge status-${data['STATUS'].toLowerCase()}">${data['STATUS']}</span></td></tr>
+                        <tr><th>Tanggal Selesai</th><td>${data['TANGGAL SELESAI'] || '-'}</td></tr>
+                    </table>
+                `;
+                document.getElementById('btnEdit').onclick = () => editSurat(data.NO);
+            } else {
+                container.innerHTML = '<p>Data tidak ditemukan</p>';
+            }
+        });
+    </script>
+</body>
+</html>
